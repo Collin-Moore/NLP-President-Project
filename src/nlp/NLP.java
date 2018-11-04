@@ -12,8 +12,13 @@ import java.util.Set;
 
 import edu.stanford.nlp.dcoref.CorefChain;
 import edu.stanford.nlp.dcoref.CorefCoreAnnotations.CorefChainAnnotation;
+import edu.stanford.nlp.ie.util.RelationTriple;
 import edu.stanford.nlp.ling.*;
 import edu.stanford.nlp.ling.CoreAnnotations.*;
+import edu.stanford.nlp.naturalli.ForwardEntailer;
+import edu.stanford.nlp.naturalli.ForwardEntailerSearchProblem;
+import edu.stanford.nlp.naturalli.NaturalLogicAnnotations;
+import edu.stanford.nlp.naturalli.NaturalLogicWeights;
 import edu.stanford.nlp.pipeline.*;
 import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
@@ -24,6 +29,7 @@ import edu.stanford.nlp.trees.TreeCoreAnnotations.TreeAnnotation;
 import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.Pair;
 
+
 public class NLP {
 
     /**
@@ -32,12 +38,12 @@ public class NLP {
     public static void main(String[] args) {
 
         Properties props = new Properties();
-        props.put("annotators", "tokenize, ssplit, pos, lemma, ner, parse, dcoref");
-//        props.put("annotators", "tokenize, ssplit, pos, lemma");
+        props.put("annotators", "tokenize, ssplit, pos, lemma, ner, parse, depparse,mention,coref,natlog,openie");
+//        props.put("annotators", "tokenize, ssplit, pos, lemma, natlog");
 
 
 
-//  		StanfordCoreNLP coreNLP = new StanfordCoreNLP(props);
+        StanfordCoreNLP coreNLP = new StanfordCoreNLP(props);
 //        File foo = new File("foo.txt");
 //        Collection<File> files = new ArrayList<File>();
 //        files.add(foo);
@@ -51,8 +57,9 @@ public class NLP {
 
         StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
         // read some text in the text variable
-        String text = "Pick up that block";
-//        String text = "In 1921, Einstein received the Nobel Prize for his original work on the photoelectric effect.";
+//        String text = "All dogs run.";
+//        String text = "Pick up the blue block.";
+        String text = "In 1921, Einstein received the Nobel Prize for his original work on the photoelectric effect.";
 //        String text = "Did Einstein receive the Nobel Prize?";
 //        String text = "Mary saw a ring through the window and asked John for it.";
         // create an empty Annotation just with the given text
@@ -65,17 +72,23 @@ public class NLP {
         // a CoreMap is essentially a Map that uses class objects as keys and has values with custom types
         List<CoreMap> sentences = document.get(SentencesAnnotation.class);
 
+
         for(CoreMap sentence: sentences) {
             // traversing the words in the current sentence
             // a CoreLabel is a CoreMap with additional token-specific methods
-            for (CoreLabel token: sentence.get(TokensAnnotation.class)) {
-                // this is the text of the token
-                String word = token.get(TextAnnotation.class);
-                // this is the POS tag of the token
-                String pos = token.get(PartOfSpeechAnnotation.class);
-                // this is the NER label of the token
-                String ne = token.get(NamedEntityTagAnnotation.class);
+//          for (CoreLabel token: sentence.get(TokensAnnotation.class)) {
+//            // this is the text of the token
+//            String word = token.get(TextAnnotation.class);
+//            // this is the POS tag of the token
+//            String pos = token.get(PartOfSpeechAnnotation.class);
+//            // this is the NER label of the token
+//            String ne = token.get(NamedEntityTagAnnotation.class);
 //            System.out.println("word " + word + " ,pos: " + pos + " ,ne: " + ne);
+//          }
+
+            Collection<RelationTriple> triples = sentence.get(NaturalLogicAnnotations.RelationTriplesAnnotation.class);
+            for (RelationTriple t : triples) {
+                System.out.println(t.subjectLemmaGloss() + "\t" + t.relationLemmaGloss() + "\t" + t.objectLemmaGloss());
             }
 
 //          // this is the parse tree of the current sentence
@@ -84,23 +97,26 @@ public class NLP {
 //          System.out.println(tree);
 
 //          // this is the Stanford dependency graph of the current sentence
-            SemanticGraph dependencies = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
-            System.out.println();
-            System.out.println(dependencies);
 
-            // get root of parse graph
-            IndexedWord root = dependencies.getFirstRoot();
-            // type of root
-            String type = root.tag();
-            switch (type) {
-                case "VB": processVerbPhrase(dependencies, root); break;
-                case "NN": processNounPhrase(dependencies, root); break;
-                case "DT": processDeterminer(dependencies, root); break;
-                default: System.out.println("Cannot identify sentence structure.");
-            }
-            // next step, need to identify further components of sentence
+//          SemanticGraph tree = sentence.get(SemanticGraphCoreAnnotations.BasicDependenciesAnnotation.class);
+//          if (tree == null) {
+//            tree = sentence.get(SemanticGraphCoreAnnotations.EnhancedDependenciesAnnotation.class);
+//          }
 
+//          NaturalLogicAnnotator annotator = new NaturalLogicAnnotator();
+//          annotator.annotatePolarity(CoreMap sentence);
+//
+//          SemanticGraph dependencies = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
+//          System.out.println("here");
+//          System.out.println(dependencies);
+//
+//          NaturalLogicWeights weights = new NaturalLogicWeights();
+//
+//          ForwardEntailer fe = new ForwardEntailer(5, 10, weights);
+//
+//          ForwardEntailerSearchProblem p = fe.apply(dependencies, true);
 
+//          IndexedWord predicate = dependencies.getFirstRoot();
 //          IndexedWord subject = null;
 //          String quantifier = null;
 //          Boolean goodToGo = false;
@@ -156,34 +172,7 @@ public class NLP {
 //        System.out.println();
 //        System.out.println(graph);
 
-    }
 
-    // Processes: {This, that} one?
-    static public void processDeterminer(SemanticGraph dependencies, IndexedWord root){
-        List<Pair<GrammaticalRelation,IndexedWord>> s = dependencies.childPairs(root);
-
-        System.out.println("Identity of object: " + root.originalText().toLowerCase());
-    }
-
-    //Processes: {That, this, the} {block, sphere}
-    static public void processNounPhrase(SemanticGraph dependencies, IndexedWord root){
-        List<Pair<GrammaticalRelation,IndexedWord>> s = dependencies.childPairs(root);
-
-        System.out.println("Identity of object: " + root.originalText().toLowerCase());
-        System.out.println("Type of object: " + s.get(0).second.originalText().toLowerCase());
-    }
-
-    // Processes: {Pick up, put down} {that, this} {block, sphere}
-    static public void processVerbPhrase(SemanticGraph dependencies, IndexedWord root){
-        List<Pair<GrammaticalRelation,IndexedWord>> s = dependencies.childPairs(root);
-        Pair<GrammaticalRelation,IndexedWord> prt = s.get(0);
-        Pair<GrammaticalRelation,IndexedWord> dobj = s.get(1);
-
-        List<Pair<GrammaticalRelation,IndexedWord>> newS = dependencies.childPairs(dobj.second);
-
-        System.out.println("Action: " + root.originalText().toLowerCase() + prt.second.originalText().toLowerCase());
-        System.out.println("Type of object: " + dobj.second.originalText().toLowerCase());
-        System.out.println("Identity of object: " + newS.get(0).second.originalText().toLowerCase());
     }
 
 }
