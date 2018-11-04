@@ -38,12 +38,12 @@ public class NLP {
     public static void main(String[] args) {
 
         Properties props = new Properties();
-        props.put("annotators", "tokenize, ssplit, pos, lemma, ner, parse, depparse,mention,coref,natlog,openie");
+        props.put("annotators", "tokenize, ssplit, pos, lemma, ner, parse, depparse,natlog,openie");
 //        props.put("annotators", "tokenize, ssplit, pos, lemma, natlog");
 
 
 
-        StanfordCoreNLP coreNLP = new StanfordCoreNLP(props);
+//        StanfordCoreNLP coreNLP = new StanfordCoreNLP(props);
 //        File foo = new File("foo.txt");
 //        Collection<File> files = new ArrayList<File>();
 //        files.add(foo);
