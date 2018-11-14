@@ -1,7 +1,10 @@
 package nlp;
 
 import edu.stanford.nlp.util.Timing;
+
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
@@ -26,29 +29,68 @@ import edu.stanford.nlp.util.Pair;
 
 
 public class NLP {
+    private static final String OUTPUT_PATH = "./res/processed.csv";
+    private static final String DELIMITER = "|";
 
     /**
      * @param args
      */
     public static void main(String[] args) {
-
-        Properties props = new Properties();
-//        props.put("annotators", "tokenize, ssplit, pos, lemma, ner, parse, depparse, natlog, openie");
-        props.put("annotators", "tokenize, ssplit, pos, lemma");
-
-
-
-        StanfordCoreNLP coreNLP = new StanfordCoreNLP(props);
-        File foo = new File("./res/test.txt");
-        Collection<File> files = new ArrayList<File>();
-        files.add(foo);
+        processFile("./res/test.txt", OUTPUT_PATH,"tokenize, ssplit, pos, lemma, depparse, natlog, openie");
+    }
+    private static void processFile(String file, String outPath, String annotators) {
         try {
-            coreNLP.processFiles(files, true, Optional.empty());
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+            File tmpdir = new File(outPath);
+            if (tmpdir.exists()) {
+                System.err.println("The output file has already been created");
+                return;
+            }
+            BufferedWriter out = new BufferedWriter(new FileWriter(outPath,true));
+            Properties props = new Properties();
+            props.put("annotators", annotators);
+            StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
+            Scanner scanner = new Scanner(new File(file));
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                String result = processLine(line, pipeline);
+                out.write(result);
+                out.newLine();
+            }
+            scanner.close();
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
+    private static String processLine(String line, StanfordCoreNLP pipeline) {
+        StringBuilder sb = new StringBuilder();
+        Annotation text = new Annotation(line);
+        pipeline.annotate(text);
+        List<CoreMap> sentences = text.get(SentencesAnnotation.class);
+        if (sentences.isEmpty()) {
+            System.err.println("No sentence found!");
+            return " ";
+        }
+        CoreMap sentence = sentences.get(0);
+        Collection<RelationTriple> triples = sentence.get(NaturalLogicAnnotations.RelationTriplesAnnotation.class);
+        if (triples != null && !triples.isEmpty()) {
+            for (RelationTriple t : triples) {
+                sb.append(t.subjectLemmaGloss());
+                sb.append(DELIMITER);
+                sb.append(t.relationLemmaGloss());
+                sb.append(DELIMITER);
+                sb.append(t.objectLemmaGloss());
+                sb.append(DELIMITER);
+            }
+            return sb.substring(0,sb.length()-1);
+        }
+        return " ";
+
+    }
+
+
+//        props.put("annotators", "tokenize, ssplit, pos, lemma, ner, parse, depparse, natlog, openie");
 
 
 //        StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
@@ -168,7 +210,5 @@ public class NLP {
 //        System.out.println();
 //        System.out.println(graph);
 
-
-    }
 
 }
