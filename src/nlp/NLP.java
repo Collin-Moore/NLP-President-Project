@@ -36,11 +36,34 @@ public class NLP {
      * @param args
      */
     public static void main(String[] args) {
-        processFile("./res/test.txt", OUTPUT_PATH, "tokenize, ssplit, pos, lemma, depparse, natlog, openie");
+        String annotators = "tokenize, ssplit, pos, lemma, depparse, natlog, openie";
+        Properties props = new Properties();
+        props.put("annotators", annotators);
+        StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
+
+        processFile("./res/test.txt", OUTPUT_PATH, pipeline);
         SearchTriples search = loadSearchTriples(OUTPUT_PATH);
+
+        Scanner input = new Scanner(System.in);
+        while(true) {
+            System.out.println("Enter a sentence to be verified, or enter exit() to exit: ");
+            String query = input.nextLine();
+            if (query.equals("exit()")) {
+                System.out.println("Exiting...");
+                break;
+            }
+            if (searchForQuery(query, search, pipeline)) {
+                System.out.println("According to our calculations, that is a true statement");
+            } else {
+                System.out.println("That statement is false");
+            }
+        }
+
+
+
     }
 
-    private static void processFile(String file, String outPath, String annotators) {
+    private static void processFile(String file, String outPath, StanfordCoreNLP pipeline) {
         try {
             File tmpdir = new File(outPath);
             if (tmpdir.exists()) {
@@ -48,9 +71,6 @@ public class NLP {
                 return;
             }
             BufferedWriter out = new BufferedWriter(new FileWriter(outPath, true));
-            Properties props = new Properties();
-            props.put("annotators", annotators);
-            StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
             Scanner scanner = new Scanner(new File(file));
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
@@ -106,6 +126,12 @@ public class NLP {
             e.printStackTrace();
         }
         return searchObj;
+    }
+
+    private static boolean searchForQuery(String query, SearchTriples search, StanfordCoreNLP pipeline) {
+        String processedQuery = processLine(query,pipeline)+DELIMITER+".";
+        String[] triple = processedQuery.split(DELIMITER);
+        return search.exists(triple);
     }
 }
 
