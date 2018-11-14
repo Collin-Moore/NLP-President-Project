@@ -1,14 +1,9 @@
 package nlp;
 
+import edu.stanford.nlp.util.Timing;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
 import edu.stanford.nlp.dcoref.CorefChain;
 import edu.stanford.nlp.dcoref.CorefCoreAnnotations.CorefChainAnnotation;
@@ -38,42 +33,43 @@ public class NLP {
     public static void main(String[] args) {
 
         Properties props = new Properties();
-        props.put("annotators", "tokenize, ssplit, pos, lemma, ner, parse, depparse,natlog,openie");
-//        props.put("annotators", "tokenize, ssplit, pos, lemma, natlog");
+//        props.put("annotators", "tokenize, ssplit, pos, lemma, ner, parse, depparse, natlog, openie");
+        props.put("annotators", "tokenize, ssplit, pos, lemma");
 
 
 
-//        StanfordCoreNLP coreNLP = new StanfordCoreNLP(props);
-//        File foo = new File("foo.txt");
-//        Collection<File> files = new ArrayList<File>();
-//        files.add(foo);
-//        try {
-//			coreNLP.processFiles(files);
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//
+        StanfordCoreNLP coreNLP = new StanfordCoreNLP(props);
+        File foo = new File("./res/test.txt");
+        Collection<File> files = new ArrayList<File>();
+        files.add(foo);
+        try {
+            coreNLP.processFiles(files, true, Optional.empty());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
-        StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
+
+
+//        StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
         // read some text in the text variable
 //        String text = "All dogs run.";
 //        String text = "Pick up the blue block.";
-        String text = "In 1921, Einstein received the Nobel Prize for his original work on the photoelectric effect.";
+//        String text = "In 1921, Einstein received the Nobel Prize for his original work on the photoelectric effect.";
 //        String text = "Did Einstein receive the Nobel Prize?";
 //        String text = "Mary saw a ring through the window and asked John for it.";
         // create an empty Annotation just with the given text
-        Annotation document = new Annotation(text);
+//        Annotation document = new Annotation(text);
 
         // run all Annotators on this text
-        pipeline.annotate(document);
+//        pipeline.annotate(document);
 
         // these are all the sentences in this document
         // a CoreMap is essentially a Map that uses class objects as keys and has values with custom types
-        List<CoreMap> sentences = document.get(SentencesAnnotation.class);
+//        List<CoreMap> sentences = document.get(SentencesAnnotation.class);
 
 
-        for(CoreMap sentence: sentences) {
+//        for(CoreMap sentence: sentences) {
             // traversing the words in the current sentence
             // a CoreLabel is a CoreMap with additional token-specific methods
 //          for (CoreLabel token: sentence.get(TokensAnnotation.class)) {
@@ -86,10 +82,10 @@ public class NLP {
 //            System.out.println("word " + word + " ,pos: " + pos + " ,ne: " + ne);
 //          }
 
-            Collection<RelationTriple> triples = sentence.get(NaturalLogicAnnotations.RelationTriplesAnnotation.class);
-            for (RelationTriple t : triples) {
-                System.out.println(t.subjectLemmaGloss() + "\t" + t.relationLemmaGloss() + "\t" + t.objectLemmaGloss());
-            }
+//            Collection<RelationTriple> triples = sentence.get(NaturalLogicAnnotations.RelationTriplesAnnotation.class);
+//            for (RelationTriple t : triples) {
+//                System.out.println(t.subjectLemmaGloss() + "\t" + t.relationLemmaGloss() + "\t" + t.objectLemmaGloss());
+//            }
 
 //          // this is the parse tree of the current sentence
 //          Tree tree = sentence.get(TreeAnnotation.class);
@@ -162,7 +158,7 @@ public class NLP {
 //        	  System.out.println("Could not translate sentence.");
 //          }
 
-        }
+//        }
 
         // This is the coreference link graph
         // Each chain stores a set of mentions that link to each other,
