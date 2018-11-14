@@ -41,7 +41,7 @@ public class NLP {
         props.put("annotators", annotators);
         StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
 
-        processFile("./res/test.txt", OUTPUT_PATH, pipeline);
+        processFile("./res/lincoln.txt", OUTPUT_PATH, pipeline);
         SearchTriples search = loadSearchTriples(OUTPUT_PATH);
 
         Scanner input = new Scanner(System.in);
@@ -129,7 +129,7 @@ public class NLP {
     }
 
     private static boolean searchForQuery(String query, SearchTriples search, StanfordCoreNLP pipeline) {
-        String processedQuery = processLine(query,pipeline)+DELIMITER+".";
+        String processedQuery = processLine(query,pipeline)+DELIMITER + ".";
         String[] triple = processedQuery.split(DELIMITER);
         return search.exists(triple);
     }

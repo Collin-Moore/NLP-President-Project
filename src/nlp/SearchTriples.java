@@ -43,7 +43,6 @@ public class SearchTriples {
             System.err.println("searchArray is empty");
             return false;
         }
-        System.out.println("Start search");
         NLPNode current;
 
         if (roots.containsKey(searchArray[0])) {
