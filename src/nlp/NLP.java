@@ -92,28 +92,29 @@ public class NLP {
 
 //        props.put("annotators", "tokenize, ssplit, pos, lemma, ner, parse, depparse, natlog, openie");
 
+    public void processSentence(String text, StanfordCoreNLP pipeline) {
 
 //        StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
-        // read some text in the text variable
+// read some text in the text variable
 //        String text = "All dogs run.";
 //        String text = "Pick up the blue block.";
 //        String text = "In 1921, Einstein received the Nobel Prize for his original work on the photoelectric effect.";
 //        String text = "Did Einstein receive the Nobel Prize?";
 //        String text = "Mary saw a ring through the window and asked John for it.";
-        // create an empty Annotation just with the given text
+// create an empty Annotation just with the given text
 //        Annotation document = new Annotation(text);
 
-        // run all Annotators on this text
+// run all Annotators on this text
 //        pipeline.annotate(document);
 
-        // these are all the sentences in this document
-        // a CoreMap is essentially a Map that uses class objects as keys and has values with custom types
+// these are all the sentences in this document
+// a CoreMap is essentially a Map that uses class objects as keys and has values with custom types
 //        List<CoreMap> sentences = document.get(SentencesAnnotation.class);
 
 
 //        for(CoreMap sentence: sentences) {
-            // traversing the words in the current sentence
-            // a CoreLabel is a CoreMap with additional token-specific methods
+// traversing the words in the current sentence
+// a CoreLabel is a CoreMap with additional token-specific methods
 //          for (CoreLabel token: sentence.get(TokensAnnotation.class)) {
 //            // this is the text of the token
 //            String word = token.get(TextAnnotation.class);
@@ -202,10 +203,10 @@ public class NLP {
 
 //        }
 
-        // This is the coreference link graph
-        // Each chain stores a set of mentions that link to each other,
-        // along with a method for getting the most representative mention
-        // Both sentence and token offsets start at 1!
+// This is the coreference link graph
+// Each chain stores a set of mentions that link to each other,
+// along with a method for getting the most representative mention
+// Both sentence and token offsets start at 1!
 //        Map<Integer, CorefChain> graph = document.get(CorefChainAnnotation.class);
 //        System.out.println();
 //        System.out.println(graph);
