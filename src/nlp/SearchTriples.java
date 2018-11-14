@@ -13,9 +13,11 @@ public class SearchTriples {
 
     public void insertTriples(String[] triples) {
         if (triples.length == 0) {
+            System.err.println("No strings in triples");
             return;
         }
 
+        int count = 0;
         NLPNode current;
 
         if (roots.containsKey(triples[0])) {
@@ -29,7 +31,9 @@ public class SearchTriples {
             if (current.contains(triples[i])) {
                 current = current.get(triples[i]);
             } else {
-                current.addNLPNode(triples[i], new NLPNode(triples[i]));
+                NLPNode temp = new NLPNode(triples[i]);
+                current.addNLPNode(triples[i], temp);
+                current = temp;
             }
         }
     }
@@ -39,7 +43,7 @@ public class SearchTriples {
             System.err.println("searchArray is empty");
             return false;
         }
-
+        System.out.println("Start search");
         NLPNode current;
 
         if (roots.containsKey(searchArray[0])) {
@@ -56,5 +60,12 @@ public class SearchTriples {
             }
         }
         return true;
+    }
+
+    public void printRoots() {
+        for (String str: roots.keySet()) {
+            System.out.print("|" + str + "|");
+        }
+        System.out.println();
     }
 }

@@ -29,4 +29,11 @@ public class NLPNode {
         return children.isEmpty();
     }
 
+    public void printChildren() {
+        for (String key: children.keySet()) {
+            System.out.print("|" + key + "|");
+        }
+        System.out.println();
+    }
+
 }
