@@ -36,8 +36,10 @@ public class NLP {
      * @param args
      */
     public static void main(String[] args) {
-        processFile("./res/test.txt", OUTPUT_PATH,"tokenize, ssplit, pos, lemma, depparse, natlog, openie");
+        processFile("./res/test.txt", OUTPUT_PATH, "tokenize, ssplit, pos, lemma, depparse, natlog, openie");
+        SearchTriples search = loadSearchTriples(OUTPUT_PATH);
     }
+
     private static void processFile(String file, String outPath, String annotators) {
         try {
             File tmpdir = new File(outPath);
@@ -45,7 +47,7 @@ public class NLP {
                 System.err.println("The output file has already been created");
                 return;
             }
-            BufferedWriter out = new BufferedWriter(new FileWriter(outPath,true));
+            BufferedWriter out = new BufferedWriter(new FileWriter(outPath, true));
             Properties props = new Properties();
             props.put("annotators", annotators);
             StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
@@ -83,17 +85,32 @@ public class NLP {
                 sb.append(t.objectLemmaGloss());
                 sb.append(DELIMITER);
             }
-            return sb.substring(0,sb.length()-1);
+            return sb.substring(0, sb.length() - 1);
         }
         return " ";
 
     }
 
+    private static SearchTriples loadSearchTriples(String filePath) {
+        SearchTriples searchObj = new SearchTriples();
+        try {
+            Scanner scanner = new Scanner(new File(filePath));
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                line = line + DELIMITER + ".";
+                String[] triples = line.split(DELIMITER);
+                searchObj.insertTriples(triples);
+            }
+            scanner.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return searchObj;
+    }
+}
 
-//        props.put("annotators", "tokenize, ssplit, pos, lemma, ner, parse, depparse, natlog, openie");
 
-    public void processSentence(String text, StanfordCoreNLP pipeline) {
-
+    //        props.put("annotators", "tokenize, ssplit, pos, lemma, ner, parse, depparse, natlog, openie");
 //        StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
 // read some text in the text variable
 //        String text = "All dogs run.";
@@ -210,6 +227,3 @@ public class NLP {
 //        Map<Integer, CorefChain> graph = document.get(CorefChainAnnotation.class);
 //        System.out.println();
 //        System.out.println(graph);
-
-
-}
