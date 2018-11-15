@@ -30,7 +30,7 @@ import edu.stanford.nlp.util.Pair;
 
 public class NLP {
     private static final String OUTPUT_PATH = "./res/processed.csv";
-    private static final String DELIMITER = "|";
+    private static final String DELIMITER = ",";
 
     /**
      * @param args
@@ -52,11 +52,8 @@ public class NLP {
                 System.out.println("Exiting...");
                 break;
             }
-            if (searchForQuery(query, search, pipeline)) {
-                System.out.println("According to our calculations, that is a true statement");
-            } else {
-                System.out.println("That statement is false");
-            }
+            String percentLikelihood = Double.toString(100.0*searchForQuery(query,search,pipeline));
+            System.out.println(percentLikelihood+"%  of this sentence was found.");
         }
 
 
@@ -94,6 +91,9 @@ public class NLP {
             System.err.println("No sentence found!");
             return " ";
         }
+        if (sentences.size()>1) {
+            System.out.println("Multiple sentences found in one line");
+        }
         CoreMap sentence = sentences.get(0);
         Collection<RelationTriple> triples = sentence.get(NaturalLogicAnnotations.RelationTriplesAnnotation.class);
         if (triples != null && !triples.isEmpty()) {
@@ -117,9 +117,13 @@ public class NLP {
             Scanner scanner = new Scanner(new File(filePath));
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
-                line = line + DELIMITER + ".";
                 String[] triples = line.split(DELIMITER);
-                searchObj.insertTriples(triples);
+                int numTriples = triples.length/3;
+                for (int i=0;i<numTriples;i++) {
+                    String[] subTriple = {triples[i*3],triples[i*3+1],triples[i*3+2]};
+                    searchObj.insertTriples(subTriple);
+                }
+
             }
             scanner.close();
         } catch (IOException e) {
@@ -128,10 +132,18 @@ public class NLP {
         return searchObj;
     }
 
-    private static boolean searchForQuery(String query, SearchTriples search, StanfordCoreNLP pipeline) {
-        String processedQuery = processLine(query,pipeline)+DELIMITER + ".";
-        String[] triple = processedQuery.split(DELIMITER);
-        return search.exists(triple);
+    private static double searchForQuery(String query, SearchTriples search, StanfordCoreNLP pipeline) {
+        String processedQuery = processLine(query,pipeline);
+
+        String[] triples = processedQuery.split(DELIMITER);
+        if (triples.length==0) return 0;
+        int count = 0;
+        int numTriples = triples.length/3;
+        for (int i=0;i<numTriples;i++) {
+            String[] subTriple = {triples[i*3],triples[i*3+1],triples[i*3+2]};
+            if (search.exists(subTriple)) {count++;}
+        }
+        return ((double) count) /((double) numTriples);
     }
 }
 
